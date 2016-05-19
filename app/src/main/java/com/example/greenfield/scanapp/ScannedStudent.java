@@ -16,11 +16,10 @@ public class ScannedStudent extends AsyncTask<Void, Void, Void> {
     private static final String USER="greg";
     private static final String PASS="Pa55word";
     private Connection conn=null, conn2 = null, conn3 = null, conn4 = null;
-    private Statement stmt2 = null, stmt4 = null;
-    private PreparedStatement stmt = null, stmt3 = null;
-    private ResultSet rs;
-    private String RFID, regID, classID;
-    private int count = 0;
+    private Statement stmt4 = null;
+    private PreparedStatement stmt = null,stmt2 = null, stmt3 = null;
+    private ResultSet ss, rs;
+    private String RFID, regID, classID, studentID;
 
     public ScannedStudent(String RFID, String regID, String classID){
         this.RFID = RFID;
@@ -37,39 +36,35 @@ public class ScannedStudent extends AsyncTask<Void, Void, Void> {
             conn3 = DriverManager.getConnection(DB_URL,USER,PASS);
             conn4 = DriverManager.getConnection(DB_URL,USER,PASS);
 
-            String sql = "SELECT `Enrol`.`enrolId`,`Enrol`.`ellrolled`,`Student`.`studentID`, `Student`.`RFID`"
-                + "FROM registerdb.`Enrol`"
-                + "INNER JOIN registerdb.`Student`"
-                + "WHERE Student.`RFID` = ? AND `Enrol`.`classID` = ?;";
-            stmt = conn.prepareStatement(sql);
+            String studsql = "SELECT studentID FROM `registerdb`.`Student` WHERE RFID = ?;";
+            stmt2 = conn2.prepareStatement(studsql);
 
-            stmt.setString(1, RFID.trim());
-            stmt.setString(2, classID.trim());
+            stmt2.setString(1, RFID.trim());
 
-            rs = stmt.executeQuery();
+            ss = stmt2.executeQuery();
 
+            if(ss.next()){
+                studentID = ss.getString("studentID");
+
+                String sql = "SELECT `Enrol`.`enrolId` FROM `registerdb`.`Enrol` WHERE studentID = ? AND classID = ?;";
+                stmt = conn.prepareStatement(sql);
+
+                stmt.setString(1, studentID);
+                stmt.setString(2, classID);
+
+                rs = stmt.executeQuery();
+            }
             try {
                 if (rs.next()){
                     String enrolID = rs.getString("enrolID");
 
-                    stmt2 = conn2.createStatement();
-                    String sql1 = "SELECT `RegEnrolID` FROM `registerdb`.`RegEnrol`";
-                    ResultSet ss = stmt2.executeQuery(sql1);
-
-                    while(ss.next()){
-                        int RegEnrolID = ss.getInt("RegEnrolID");
-                        count = count + RegEnrolID;
-                    }
-
-                    String pre = "INSERT INTO `registerdb`.`RegEnrol` (`RegEnrolID`, `RegID`, `EnrolID`, `Attened`) " +
-                        "VALUES (?,?,?,?);";
+                    String pre = "UPDATE `registerdb`.`RegEnrol` SET `Attened` = ? WHERE RegID = ? AND EnrolID = ?;";
                     stmt3 = conn3.prepareStatement(pre);
 
-                    stmt3.setInt(1, count);
+                    stmt3.setString(1, "t");
                     stmt3.setString(2, regID);
                     stmt3.setString(3, enrolID);
-                    stmt3.setString(4, "t");
-
+                    System.out.println(regID +" ... "+ enrolID);
                     stmt3.execute();
                 }
 

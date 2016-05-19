@@ -5,16 +5,17 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Large Text"
         android:id="@+id/textView"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp" />
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="391dp"
+        android:layout_height="match_parent"
         android:id="@+id/listView"
         tools:listitem="@android:layout/simple_list_item_1" />
 
